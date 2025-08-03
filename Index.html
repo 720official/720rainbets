@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>720bets - Mines Game with Coins</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root {
+      --bg:#0f111a;
+      --card:#1f2340;
+      --accent:#6366f1;
+      --radius:12px;
+      --shadow:0 10px 25px -5px rgba(0,0,0,0.5);
+    }
+    *{box-sizing:border-box;}
+    body {
+      margin:0;
+      min-height:100vh;
+      background: radial-gradient(circle at 30% 30%, #1a1f44 0%, var(--bg) 80%);
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+      color:#e7ecff;
+      padding:1rem;
+      max-width: 760px;
+      margin:auto;
+    }
+    h1 {margin-top:0;font-size:1.9rem;display:flex;align-items:center;gap:8px;}
+    .sub {font-size:.9rem;opacity:.85;margin-top:4px;}
+    .flex {display:flex;gap:1rem;flex-wrap:wrap;}
+    .card {
+      background: var(--card);
+      padding:1rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      flex:1;
+      min-width:220px;
+    }
+    button {
+      background: var(--accent);
+      border:none;
+      padding:.55rem 1rem;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      color:#fff;
+      transition:filter .2s;
+    }
+    button:disabled {opacity:.5;cursor:not-allowed;}
+    button:hover {filter:brightness(1.1);}
+    .small {font-size:.75rem;opacity:.8;margin-top:4px;}
+    .grid {
+      display:grid;
+      grid-template-columns: repeat(4, 70px);
+      gap:8px;
+      margin:12px 0;
+    }
+    .cell {
+      width:70px;
+      height:70px;
+      background:#272f6e;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.8rem;
+      cursor:pointer;
+      position:relative;
+      user-select:none;
+      transition:transform .15s, background .2s;
+      font-weight:700;
+    }
+    .cell:hover {transform:scale(1.03);}
+    .cell.revealed {
+      background:#3f52b5;
+      cursor:default;
+    }
+    .cell.bomb {
+      background:#d94545;
+      color:#fff;
+    }
+    .status {
+      margin:8px 0;
+      padding:.5rem .75rem;
+      border-radius:8px;
+      background: rgba(255,255,255,0.05);
+    }
+    .danger {color:#ff9999;}
+    .win {color:#7cff9f;}
+    .wallet-row {
+      display:flex;
+      gap:1rem;
+      flex-wrap:wrap;
+    }
+    .inline {display:inline-flex;gap:6px;align-items:center;}
+    .pill {
+      background: rgba(255,255,255,0.07);
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:.75rem;
+      margin-right:4px;
+    }
+    input[type=number], input[type=text] {
+      width:100px;
+      padding:6px 8px;
+      border-radius:6px;
+      border:none;
+      background:#1d2755;
+      color:#fff;
+      font-weight:600;
+    }
+    .controls {display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px;}
+    .login-box {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .name-tag {
+      background: rgba(255,255,255,0.08);
+      padding:6px 12px;
+      border-radius:999px;
+      display:inline-flex;
+      gap:6px;
+      align-items:center;
+      font-weight:600;
+    }
+    .link-like {
+      background: none;
+      border: none;
+      color: #a0c7ff;
+      cursor: pointer;
+      padding:0;
+      font-size:.8rem;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+    <div>
+      <h1>720bets <span style="font-size:1rem; margin-left:4px;">🪙 Mines (4×4)</span></h1>
+      <div class="sub">Reveal 15 safe tiles, avoid the bomb. Safe shows 🪙, bomb shows 💣. Early cash-out available.</div>
+    </div>
+    <div class="card" style="padding:.5rem .75rem; min-width:220px;">
+      <div id="login-section"></div>
+    </div>
+  </header>
+
+  <div class="wallet-row" style="margin-top:8px;">
+    <div class="card">
+      <div><strong>Cash Balance:</strong> ₹<span id="cash-balance">0</span></div>
+      <div class="small">Fake cash. Convert to play coins.</div>
+      <div style="margin-top:8px;" class="controls">
+        <button id="add-cash">Add ₹1000</button>
+        <button id="reset-wallet" style="background:#e05f5f;">Reset</button>
+      </div>
+    </div>
+    <div class="card">
+      <div><strong>Play Coins:</strong> <span id="coin-balance">0</span></div>
+      <div class="small">Use these to bet on the minefield. Early cash-out shows guaranteed value based on progress.</div>
+      <div style="margin-top:8px;" class="controls">
+        <button id="to-coins">Convert ₹100 → 100 coins</button>
+        <button id="cash-out-coins">Cash Out Coins</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:10px;">
+    <div class="inline" style="justify-content:space-between; width:100%;">
+      <div>
+        <label>Bet: <input type="number" id="bet-input" value="100" min="1"></label>
+        <span class="small">coins</span>
+      </div>
+      <div class="controls">
+        <button id="start-btn">Start Game</button>
+        <button id="early-cash" disabled>Early Cash-out</button>
+        <button id="reveal-all">Reveal All Safe</button>
+      </div>
+    </div>
+    <div class="status" id="status">No game running. Place bet and start.</div>
+    <div class="grid" id="grid"></div>
+    <div class="small">
+      Login to track your name. All balances are local to this browser; refreshing keeps them. This is fully simulated—no real money transfer.
+    </div>
+  </div>
+
+  <script>
+    // --- constants and storage keys ---
+    const STORAGE = '720bets-mines-state-v2';
+    const USER_KEY = '720bets-user';
+    const MAX_SAFE = 15;
+
+    // --- load or init ---
+    let state = JSON.parse(localStorage.getItem(STORAGE) || 'null') || { cash: 1000, coins: 0 };
+    let user = localStorage.getItem(USER_KEY) || null;
+    let game = null;
+
+    // --- DOM refs ---
+    const cashEl = document.getElementById('cash-balance');
+    const coinEl = document.getElementById('coin-balance');
+    const betInput = document.getElementById('bet-input');
+    const startBtn = document.getElementById('start-btn');
+    const gridEl = document.getElementById('grid');
+    const statusEl = document.getElementById('status');
+    const earlyCashBtn = document.getElementById('early-cash');
+    const revealAllBtn = document.getElementById('reveal-all');
+    const toCoinsBtn = document.getElementById('to-coins');
+    const cashOutCoinsBtn = document.getElementById('cash-out-coins');
+    const addCashBtn = document.getElementById('add-cash');
+    const resetWalletBtn = document.getElementById('reset-wallet');
+    const loginSection = document.getElementById('login-section');
+
+    // --- helpers ---
+    function saveState() {
+      localStorage.setItem(STORAGE, JSON.stringify(state));
+      renderWallet();
+    }
+    function saveUser() {
+      if (user) localStorage.setItem(USER_KEY, user);
+      else localStorage.removeItem(USER_KEY);
+      renderLogin();
+    }
+    function randomInt(n){ return Math.floor(Math.random()*n); }
+    function formatCoins(x){ return x.toLocaleString(); }
+
+    // --- render ---
+    function renderWallet(){
+      cashEl.textContent = state.cash.toFixed(2);
+      coinEl.textContent = state.coins;
+    }
+
+    function renderLogin(){
+      loginSection.innerHTML = '';
+      if (user) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'name-tag';
+        wrapper.innerHTML = `<span>👤 ${user}</span>`;
+        const changeBtn = document.createElement('button');
+        changeBtn.className = 'link-like';
+        changeBtn.textContent = 'Change';
+        changeBtn.addEventListener('click', () => {
+          user = null;
+          saveUser();
+        });
+        wrapper.appendChild(changeBtn);
+        loginSection.appendChild(wrapper);
+      } else {
+        const box = document.createElement('div');
+        box.className = 'login-box';
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.placeholder = 'Enter name';
+        inp.maxLength = 16;
+        const btn = document.createElement('button');
+        btn.textContent = 'Log in';
+        btn.addEventListener('click', () => {
+          const v = inp.value.trim();
+          if (!v) { alert('Name required'); return; }
+          user = v;
+          saveUser();
+          notify(`Welcome, ${user}!`);
+        });
+        box.appendChild(inp);
+        box.appendChild(btn);
+        loginSection.appendChild(box);
+      }
+    }
+
+    function updateStatus(text, isError=false, isWin=false){
+      statusEl.textContent = text;
+      statusEl.className = 'status';
+      if (isError) statusEl.classList.add('danger');
+      if (isWin) statusEl.classList.add('win');
+    }
+
+    function updateEarlyCashLabel(){
+      if (!game) return;
+      const val = earlyCashOutValue();
+      earlyCashBtn.textContent = `Early Cash-out (${formatCoins(val)})`;
+    }
+
+    function notify(msg){
+      updateStatus(msg);
+    }
+
+    // --- wallet actions ---
+    addCashBtn.addEventListener('click', () => {
+      state.cash += 1000;
+      saveState();
+      notify('Added ₹1000 fake cash.');
+    });
+    resetWalletBtn.addEventListener('click', () => {
+      if (!confirm('Reset wallet and game?')) return;
+      state = { cash: 1000, coins: 0 };
+      game = null;
+      saveState();
+      renderGrid();
+      updateStatus('Wallet reset. Start new game.');
+    });
+    toCoinsBtn.addEventListener('click', () => {
+      const amt = 100;
+      if (state.cash < amt) { alert('Not enough cash'); return; }
+      state.cash -= amt;
+      state.coins += amt;
+      saveState();
+      notify(`Converted ₹${amt} to ${amt} coins.`);
+    });
+    cashOutCoinsBtn.addEventListener('click', () => {
+      if (state.coins <= 0) { alert('No coins to cash out'); return; }
+      state.cash += state.coins;
+      state.coins = 0;
+      saveState();
+      notify('Cashed out coins to cash (simulated).');
+    });
+
+    // --- game logic ---
+    function startGame(){
+      const bet = Math.floor(Number(betInput.value));
+      if (!bet || bet <= 0) { alert('Invalid bet'); return; }
+      if (state.coins < bet) { alert('Not enough coins'); return; }
+      state.coins -= bet; // stake
+      saveState();
+      const bombIndex = randomInt(16);
+      game = {
+        bet,
+        bombIndex,
+        revealed: new Set(),
+        over: false,
+        payoutMax: 15,
+        started: Date.now(),
+      };
+      renderGrid();
+      updateStatus(`Game started. Bet ${bet} coins. Safe left: ${MAX_SAFE - game.revealed.size}`);
+      earlyCashBtn.disabled = false;
+      updateEarlyCashLabel();
+    }
+
+    function revealCell(idx){
+      if (!game || game.over) return;
+      if (game.revealed.has(idx)) return;
+      if (idx === game.bombIndex) {
+        game.revealed.add(idx);
+        game.over = true;
+        finalize(false);
+        return;
+      }
+      game.revealed.add(idx);
+      if (game.revealed.size === MAX_SAFE) {
+        game.over = true;
+        finalize(true);
+      } else {
+        renderGrid();
+        updateStatus(`Safe! ${game.revealed.size}/${MAX_SAFE} cleared. Early cash-out: ${formatCoins(earlyCashOutValue())}`);
+        updateEarlyCashLabel();
+      }
+    }
+
+    function earlyCashOutValue(){
+      if (!game) return 0;
+      const progress = game.revealed.size / MAX_SAFE;
+      const multiplier = 1 + progress * (game.payoutMax - 1);
+      return Math.floor(game.bet * multiplier);
+    }
+
+    function cashOutEarly(){
+      if (!game || game.over) return;
+      const val = earlyCashOutValue();
+      state.coins += val;
+      saveState();
+      game.over = true;
+      renderGrid();
+      earlyCashBtn.disabled = true;
+      updateStatus(`🟡 Early cash-out: Got ${val} coins (${game.revealed.size}/${MAX_SAFE} progress).`, false, true);
+    }
+
+    function finalize(won){
+      renderGrid();
+      earlyCashBtn.disabled = true;
+      if (won) {
+        const payout = game.bet * game.payoutMax;
+        state.coins += payout;
+        saveState();
+        updateStatus(`🎉 Cleared all safe. Won ${payout} coins (${game.payoutMax}x).`, false, true);
+      } else {
+        updateStatus(`💥 Boom! Hit the bomb. Lost ${game.bet} coins.`, true);
+      }
+    }
+
+    // --- UI render grid ---
+    function renderGrid(){
+      gridEl.innerHTML = '';
+      for (let i = 0; i < 16; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.idx = i;
+        if (game && game.revealed.has(i)) {
+          cell.classList.add('revealed');
+          if (i === game.bombIndex) {
+            cell.textContent = '💣';
+            cell.classList.add('bomb');
+          } else {
+            cell.textContent = '🪙';
+          }
+        }
+        if (game && game.over && i === game.bombIndex && !game.revealed.has(i)) {
+          cell.classList.add('revealed', 'bomb');
+          cell.textContent = '💣';
+          cell.style.opacity = '0.6';
+        }
+        cell.addEventListener('click', () => {
+          if (!game || game.over) return;
+          revealCell(i);
+        });
+        gridEl.appendChild(cell);
+      }
+    }
+
+    // --- event hooks ---
+    startBtn.addEventListener('click', startGame);
+    earlyCashBtn.addEventListener('click', cashOutEarly);
+    revealAllBtn.addEventListener('click', () => {
+      if (!game || game.over) return;
+      for (let i = 0; i < 16; i++) if (i !== game.bombIndex) game.revealed.add(i);
+      game.over = true;
+      finalize(true);
+    });
+
+    // --- init on load ---
+    renderWallet();
+    renderLogin();
+    renderGrid();
+    updateEarlyCashLabel();
+
+  </script>
+</body>
+  </html>
