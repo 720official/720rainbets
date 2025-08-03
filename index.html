@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>720bets - Mines Game with Coins</title>
+  <title>Minesweep - Mines Game with Coins</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root {
@@ -137,8 +137,10 @@
 <body>
   <header style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
     <div>
-      <h1>720bets <span style="font-size:1rem; margin-left:4px;">🪙 Mines (4×4)</span></h1>
+      <h1>minesweep <span style="font-size:1rem; margin-left:4px;">🪙 Mines (4×4)</span></h1>
       <div class="sub">Reveal 15 safe tiles, avoid the bomb. Safe shows 🪙, bomb shows 💣. Early cash-out available.</div>
+    </div>
+    <div class="sub">by @chosenthisrandomly</div>
     </div>
     <div class="card" style="padding:.5rem .75rem; min-width:220px;">
       <div id="login-section"></div>
@@ -148,7 +150,7 @@
   <div class="wallet-row" style="margin-top:8px;">
     <div class="card">
       <div><strong>Cash Balance:</strong> ₹<span id="cash-balance">0</span></div>
-      <div class="small">Fake cash. Convert to play coins.</div>
+      <div class="small">cash. Convert to play coins.</div>
       <div style="margin-top:8px;" class="controls">
         <button id="add-cash">Add ₹1000</button>
         <button id="reset-wallet" style="background:#e05f5f;">Reset</button>
@@ -173,7 +175,6 @@
       <div class="controls">
         <button id="start-btn">Start Game</button>
         <button id="early-cash" disabled>Early Cash-out</button>
-        <button id="reveal-all">Reveal All Safe</button>
       </div>
     </div>
     <div class="status" id="status">No game running. Place bet and start.</div>
@@ -186,7 +187,7 @@
     // --- constants and storage keys ---
     const STORAGE = '720bets-mines-state-v2';
     const USER_KEY = '720bets-user';
-    const MAX_SAFE = 15;
+    const MAX_SAFE = 20;
 
     // --- load or init safely ---
     let state;
