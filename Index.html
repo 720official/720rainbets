@@ -189,8 +189,13 @@
     const USER_KEY = '720bets-user';
     const MAX_SAFE = 15;
 
-    // --- load or init ---
-    let state = JSON.parse(localStorage.getItem(STORAGE) || 'null') || { cash: 1000, coins: 0 };
+    // --- load or init safely ---
+    let state;
+    try {
+      state = JSON.parse(localStorage.getItem(STORAGE)) || { cash: 1000, coins: 0 };
+    } catch {
+      state = { cash: 1000, coins: 0 };
+    }
     let user = localStorage.getItem(USER_KEY) || null;
     let game = null;
 
@@ -222,7 +227,7 @@
     function randomInt(n){ return Math.floor(Math.random()*n); }
     function formatCoins(x){ return x.toLocaleString(); }
 
-    // --- render ---
+    // --- render functions ---
     function renderWallet(){
       cashEl.textContent = state.cash.toFixed(2);
       coinEl.textContent = state.coins;
@@ -240,6 +245,7 @@
         changeBtn.addEventListener('click', () => {
           user = null;
           saveUser();
+          notify('Logged out.');
         });
         wrapper.appendChild(changeBtn);
         loginSection.appendChild(wrapper);
@@ -428,8 +434,8 @@
     renderWallet();
     renderLogin();
     renderGrid();
+    earlyCashBtn.disabled = true;
     updateEarlyCashLabel();
-
   </script>
 </body>
   </html>
