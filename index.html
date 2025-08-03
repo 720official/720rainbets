@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Minesweeper </title>
+  <title>720bets Mines (4×4)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root {
@@ -26,7 +25,6 @@
     }
     h1 {margin-top:0;font-size:1.9rem;display:flex;align-items:center;gap:8px;}
     .sub {font-size:.9rem;opacity:.85;margin-top:4px;}
-    .flex {display:flex;gap:1rem;flex-wrap:wrap;}
     .card {
       background: var(--card);
       padding:1rem;
@@ -92,13 +90,6 @@
       flex-wrap:wrap;
     }
     .inline {display:inline-flex;gap:6px;align-items:center;}
-    .pill {
-      background: rgba(255,255,255,0.07);
-      padding:4px 10px;
-      border-radius:999px;
-      font-size:.75rem;
-      margin-right:4px;
-    }
     input[type=number], input[type=text] {
       width:100px;
       padding:6px 8px;
@@ -138,7 +129,7 @@
 <body>
   <header style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
     <div>
-      <h1>MineSweeper <span style="font-size:1rem; margin-left:4px;">🪙 Mines (4×4)</span></h1>
+      <h1>720bets <span style="font-size:1rem; margin-left:4px;">🪙 Mines (4×4)</span></h1>
       <div class="sub">Reveal 15 safe tiles, avoid the bomb. Safe shows 🪙, bomb shows 💣. Early cash-out available.</div>
     </div>
     <div class="card" style="padding:.5rem .75rem; min-width:220px;">
@@ -149,7 +140,7 @@
   <div class="wallet-row" style="margin-top:8px;">
     <div class="card">
       <div><strong>Cash Balance:</strong> ₹<span id="cash-balance">0</span></div>
-      <div class="small">Cash. Convert to play coins.</div>
+      <div class="small">Fake cash. Convert to play coins.</div>
       <div style="margin-top:8px;" class="controls">
         <button id="add-cash">Add ₹1000</button>
         <button id="reset-wallet" style="background:#e05f5f;">Reset</button>
@@ -184,12 +175,10 @@
   </div>
 
   <script>
-    // --- constants and storage keys ---
     const STORAGE = '720bets-mines-state-v2';
     const USER_KEY = '720bets-user';
     const MAX_SAFE = 15;
 
-    // --- load or init safely ---
     let state;
     try {
       state = JSON.parse(localStorage.getItem(STORAGE)) || { cash: 1000, coins: 0 };
@@ -199,7 +188,7 @@
     let user = localStorage.getItem(USER_KEY) || null;
     let game = null;
 
-    // --- DOM refs ---
+    // DOM refs
     const cashEl = document.getElementById('cash-balance');
     const coinEl = document.getElementById('coin-balance');
     const betInput = document.getElementById('bet-input');
@@ -207,14 +196,12 @@
     const gridEl = document.getElementById('grid');
     const statusEl = document.getElementById('status');
     const earlyCashBtn = document.getElementById('early-cash');
-    const revealAllBtn = document.getElementById('reveal-all');
+    const loginSection = document.getElementById('login-section');
     const toCoinsBtn = document.getElementById('to-coins');
     const cashOutCoinsBtn = document.getElementById('cash-out-coins');
     const addCashBtn = document.getElementById('add-cash');
     const resetWalletBtn = document.getElementById('reset-wallet');
-    const loginSection = document.getElementById('login-section');
 
-    // --- helpers ---
     function saveState() {
       localStorage.setItem(STORAGE, JSON.stringify(state));
       renderWallet();
@@ -227,7 +214,6 @@
     function randomInt(n){ return Math.floor(Math.random()*n); }
     function formatCoins(x){ return x.toLocaleString(); }
 
-    // --- render functions ---
     function renderWallet(){
       cashEl.textContent = state.cash.toFixed(2);
       coinEl.textContent = state.coins;
@@ -278,17 +264,23 @@
       if (isWin) statusEl.classList.add('win');
     }
 
+    function earlyCashOutValue(){
+      if (!game) return 0;
+      const progress = game.revealed.size / MAX_SAFE;
+      const multiplier = 1 + Math.pow(progress, 3) * (game.payoutMax - 1);
+      return Math.floor(game.bet * multiplier);
+    }
+
     function updateEarlyCashLabel(){
       if (!game) return;
-      const val = earlyCashOutValue();
-      earlyCashBtn.textContent = `Early Cash-out (${formatCoins(val)})`;
+      earlyCashBtn.textContent = `Early Cash-out (${formatCoins(earlyCashOutValue())})`;
     }
 
     function notify(msg){
       updateStatus(msg);
     }
 
-    // --- wallet actions ---
+    // wallet actions
     addCashBtn.addEventListener('click', () => {
       state.cash += 1000;
       saveState();
@@ -318,12 +310,12 @@
       notify('Cashed out coins to cash (simulated).');
     });
 
-    // --- game logic ---
+    // game logic
     function startGame(){
       const bet = Math.floor(Number(betInput.value));
       if (!bet || bet <= 0) { alert('Invalid bet'); return; }
       if (state.coins < bet) { alert('Not enough coins'); return; }
-      state.coins -= bet; // stake
+      state.coins -= bet;
       saveState();
       const bombIndex = randomInt(16);
       game = {
@@ -360,13 +352,6 @@
       }
     }
 
-    function earlyCashOutValue(){
-      if (!game) return 0;
-      const progress = game.revealed.size / MAX_SAFE;
-      const multiplier = 1 + progress * (game.payoutMax - 1);
-      return Math.floor(game.bet * multiplier);
-    }
-
     function cashOutEarly(){
       if (!game || game.over) return;
       const val = earlyCashOutValue();
@@ -391,7 +376,6 @@
       }
     }
 
-    // --- UI render grid ---
     function renderGrid(){
       gridEl.innerHTML = '';
       for (let i = 0; i < 16; i++) {
@@ -420,17 +404,11 @@
       }
     }
 
-    // --- event hooks ---
+    // events
     startBtn.addEventListener('click', startGame);
     earlyCashBtn.addEventListener('click', cashOutEarly);
-    revealAllBtn.addEventListener('click', () => {
-      if (!game || game.over) return;
-      for (let i = 0; i < 16; i++) if (i !== game.bombIndex) game.revealed.add(i);
-      game.over = true;
-      finalize(true);
-    });
 
-    // --- init on load ---
+    // init
     renderWallet();
     renderLogin();
     renderGrid();
@@ -439,4 +417,3 @@
   </script>
 </body>
   </html>
-        
