@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Minesweep - Mines Game with Coins</title>
+  <title>Minesweeper </title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root {
@@ -137,9 +138,8 @@
 <body>
   <header style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
     <div>
-      <h1>minesweep <span style="font-size:1rem; margin-left:4px;">🪙 Mines (4×4)</span></h1>
-      <div class="sub">Reveal 15 safe tiles, avoid the bomb. Safe shows 🪙, bomb shows 💣. Early cash-out available.by chosenthisrandomly</div>
-    </div>
+      <h1>MineSweeper <span style="font-size:1rem; margin-left:4px;">🪙 Mines (4×4)</span></h1>
+      <div class="sub">Reveal 15 safe tiles, avoid the bomb. Safe shows 🪙, bomb shows 💣. Early cash-out available.(by @chosenthisrandomly)</div>
     </div>
     <div class="card" style="padding:.5rem .75rem; min-width:220px;">
       <div id="login-section"></div>
@@ -149,7 +149,7 @@
   <div class="wallet-row" style="margin-top:8px;">
     <div class="card">
       <div><strong>Cash Balance:</strong> ₹<span id="cash-balance">0</span></div>
-      <div class="small">cash. Convert to play coins.</div>
+      <div class="small">Cash. Convert to play coins.</div>
       <div style="margin-top:8px;" class="controls">
         <button id="add-cash">Add ₹1000</button>
         <button id="reset-wallet" style="background:#e05f5f;">Reset</button>
@@ -182,11 +182,12 @@
       Login to track your name. All balances are local to this browser; refreshing keeps them. This is fully simulated—no real money transfer.
     </div>
   </div>
-<script>
+
+  <script>
     // --- constants and storage keys ---
     const STORAGE = '720bets-mines-state-v2';
     const USER_KEY = '720bets-user';
-    const MAX_SAFE = 20;
+    const MAX_SAFE = 15;
 
     // --- load or init safely ---
     let state;
@@ -435,8 +436,7 @@
     renderGrid();
     earlyCashBtn.disabled = true;
     updateEarlyCashLabel();
-</script>
-      
-      
+  </script>
 </body>
   </html>
+        
